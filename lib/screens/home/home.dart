@@ -10,45 +10,95 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  late Future<List<Map<String, String>>> _videosDataFuture;
   @override
+  void initState() {
+    _videosDataFuture =
+        Provider.of<HomeData>(context, listen: false).videosData();
+    print(_videosDataFuture.toString());
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
 // declaring them in build for responsiveness
     var currentDeviceWidth = MediaQuery.of(context).size.width;
     var currentDeviceHeight = MediaQuery.of(context).size.height;
 
-    return SizedBox(
-        height: 0.2, //following youtube clone
-        child: SingleChildScrollView(
-          // physics: NeverScrollableScrollPhysics(),
-          child: Container(
-            height: currentDeviceHeight,
-            child: GridView.builder(
-              itemCount: 10,
-              //change padding for responsiveness
-              padding: EdgeInsets.only(
-                left: 30,
-                top: 20.0,
-                right: 40,
-                bottom: 150.0,
-              ),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 400, //width
-                mainAxisExtent: 310, //height
-                crossAxisSpacing: 15.0,
-                mainAxisSpacing: 15.0,
-              ),
-              itemBuilder: (context, index) {
-                return VideosList();
-              },
-            ),
-          ),
-        ));
+    return FutureBuilder(
+        future: _videosDataFuture,
+        builder: ((context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+
+            case ConnectionState.done:
+              {
+                if (snapshot.hasData) {
+                  // List<Map<String, String>> videoInfoList =
+                  //     Provider.of<VideoData>(context).videosInfo;
+                  List<Map<String, String>> videosListMap =
+                      Provider.of<HomeData>(context).videosListMap;
+                  return SizedBox(
+                      height: 0.2, //following youtube clone
+                      child: SingleChildScrollView(
+                        // physics: NeverScrollableScrollPhysics(),
+                        child: Container(
+                          height: currentDeviceHeight,
+                          child: GridView.builder(
+                            itemCount: videosListMap.length,
+                            //change padding for responsiveness
+                            padding: EdgeInsets.only(
+                              left: 30,
+                              top: 20.0,
+                              right: 40,
+                              bottom: 150.0,
+                            ),
+                            shrinkWrap: true,
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 400, //width
+                              mainAxisExtent: 310, //height
+                              crossAxisSpacing: 15.0,
+                              mainAxisSpacing: 15.0,
+                            ),
+                            itemBuilder: (context, index) {
+                              return VideosList(videosListMap, index);
+                            },
+                          ),
+                        ),
+                      ));
+                }
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text('Error Occurred ! while fetching data...'),
+                    ],
+                  ),
+                );
+              }
+
+            default:
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('Loading ...'),
+                    CircularProgressIndicator(),
+                  ],
+                ),
+              );
+          }
+        }));
   }
 }
 
 class VideosList extends StatelessWidget {
-  const VideosList({super.key});
+  final List<Map<String, String>> videosListMap;
+  final index;
+  const VideosList(this.videosListMap, this.index, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +112,8 @@ class VideosList extends StatelessWidget {
               width: MediaQuery.of(context).size.width,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25.0),
-                child: Image.asset(
-                  Provider.of<HomeData>(listen: false, context).thumbnaiImage,
+                child: Image.network(
+                  videosListMap[index]['imageUrl']!,
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -104,7 +154,7 @@ class VideosList extends StatelessWidget {
                   alignment: Alignment.topLeft,
                   margin: EdgeInsets.only(left: 40),
                   child: Text(
-                    "some description about the video that can be maximum of 2 lines",
+                    videosListMap[index]['description']!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
