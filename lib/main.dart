@@ -1,10 +1,10 @@
-import 'package:app_for_publishing/screens/home/home_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/all_screens.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/home/home_data.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,63 +36,13 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print('mzin.dart build called');
-    var deviceWidth = MediaQuery.of(context).size.width;
-    var deviceHeight = MediaQuery.of(context).size.height;
+    print('main.dart build called');
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(
-          deviceWidth,
-          deviceHeight * 0.08,
-        ), //Size.fromHeight(55.0),
-        child: Consumer<HomeData>(
-          builder: (context, homeData, child) => MyAppBar(
-            context,
-            appBarHeight: deviceHeight * 0.08,
-            appBarWidth: deviceWidth,
-            currentTab: _tabController,
-            homeData: homeData,
-          ),
-        ),
-      ),
-      drawer: SizedBox(
-        width: deviceWidth * 0.6,
-        child: Drawer(
-          // Add a ListView to the drawer. This ensures the user can scroll
-          // through the options in the drawer if there isn't enough vertical
-          // space to fit everything.
-          child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Text('Drawer Header'),
-              ),
-              ListTile(
-                title: const Text('Item 1'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              ListTile(
-                title: const Text('Item 2'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          Home(),
+          Consumer(builder: ((context, _, __) => Home())),
           Audios(),
           Profile(),
         ],

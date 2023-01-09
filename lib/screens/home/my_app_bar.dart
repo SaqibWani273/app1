@@ -5,16 +5,12 @@ import 'package:provider/provider.dart';
 class MyAppBar extends StatelessWidget {
   final double appBarHeight;
   final double appBarWidth;
-  final TabController currentTab;
-  final HomeData homeData;
 
   const MyAppBar(
     BuildContext context, {
     super.key,
     required this.appBarHeight,
     required this.appBarWidth,
-    required this.currentTab,
-    required this.homeData,
   });
 
   @override
@@ -94,13 +90,11 @@ class MyAppBar extends StatelessWidget {
                             },
                             autofocus: false,
                             decoration: InputDecoration(
-                              hintText:
-                                  // Provider.of<HomeData>(context)
-                                  //             .currentTabIndex ==
-                                  //         0
-                                  homeData.currentTabIndex == 0
-                                      ? 'Search  videos here'
-                                      : 'Search for Audios ',
+                              hintText: Provider.of<HomeData>(context)
+                                          .currentTabIndex ==
+                                      0
+                                  ? 'Search  videos here'
+                                  : 'Search for Audios ',
                             ),
                             keyboardType: TextInputType.name,
                           ),

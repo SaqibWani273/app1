@@ -1,6 +1,10 @@
 import 'package:app_for_publishing/screens/home/home_data.dart';
+import 'package:app_for_publishing/screens/home/my_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'my_app_bar.dart';
+import 'my_drawer.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,89 +19,105 @@ class _HomeState extends State<Home> {
   void initState() {
     _videosDataFuture =
         Provider.of<HomeData>(context, listen: false).videosData();
-    print(_videosDataFuture.toString());
+
     super.initState();
   }
 
   Widget build(BuildContext context) {
+    print('home build');
 // declaring them in build for responsiveness
-    var currentDeviceWidth = MediaQuery.of(context).size.width;
-    var currentDeviceHeight = MediaQuery.of(context).size.height;
+    var deviceWidth = MediaQuery.of(context).size.width;
+    var deviceHeight = MediaQuery.of(context).size.height;
 
-    return FutureBuilder(
-        future: _videosDataFuture,
-        builder: ((context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size(
+          deviceWidth,
+          deviceHeight * 0.08,
+        ), //Size.fromHeight(55.0),
+        child: MyAppBar(
+          context,
+          appBarHeight: deviceHeight * 0.08,
+          appBarWidth: deviceWidth,
+        ),
+      ),
+      drawer: SizedBox(
+        width: deviceWidth * 0.6,
+        child: MyDrawer(),
+      ),
+      body: FutureBuilder(
+          future: _videosDataFuture,
+          builder: ((context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
 
-            case ConnectionState.done:
-              {
-                if (snapshot.hasData) {
-                  // List<Map<String, String>> videoInfoList =
-                  //     Provider.of<VideoData>(context).videosInfo;
-                  List<Map<String, String>> videosListMap =
-                      Provider.of<HomeData>(context).videosListMap;
-                  return SizedBox(
-                      height: 0.2, //following youtube clone
-                      child: SingleChildScrollView(
-                        // physics: NeverScrollableScrollPhysics(),
-                        child: Container(
-                          height: currentDeviceHeight,
-                          child: GridView.builder(
-                            itemCount: videosListMap.length,
-                            //change padding for responsiveness
-                            padding: EdgeInsets.only(
-                              left: 30,
-                              top: 20.0,
-                              right: 40,
-                              bottom: 150.0,
-                            ),
-                            shrinkWrap: true,
-                            gridDelegate:
-                                const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 400, //width
-                              mainAxisExtent: 310, //height
-                              crossAxisSpacing: 15.0,
-                              mainAxisSpacing: 15.0,
-                            ),
-                            itemBuilder: (context, index) {
-                              return VideosList(videosListMap, index);
-                            },
+              case ConnectionState.done:
+                {
+                  if (snapshot.hasData) {
+                    // List<Map<String, String>> videoInfoList =
+                    //     Provider.of<VideoData>(context).videosInfo;
+                    List<Map<String, String>> videosListMap =
+                        Provider.of<HomeData>(context).videosListMap;
+                    return SingleChildScrollView(
+                      // physics: NeverScrollableScrollPhysics(),
+                      child: Container(
+                        height: deviceHeight,
+                        child: GridView.builder(
+                          itemCount: videosListMap.length,
+                          //change padding for responsiveness
+                          padding: const EdgeInsets.only(
+                            left: 30,
+                            top: 20.0,
+                            right: 40,
+                            bottom: 150.0,
                           ),
+                          //  shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 400, //width
+                            mainAxisExtent: 310, //height
+                            crossAxisSpacing: 15.0,
+                            mainAxisSpacing: 15.0,
+                          ),
+                          itemBuilder: (context, index) {
+                            return VideosList(videosListMap, index);
+                          },
                         ),
-                      ));
+                      ),
+                    );
+                  }
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text('Error Occurred ! while fetching data...'),
+                      ],
+                    ),
+                  );
                 }
+
+              default:
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Text('Error Occurred ! while fetching data...'),
+                      Text('Loading ...'),
+                      CircularProgressIndicator(),
                     ],
                   ),
                 );
-              }
-
-            default:
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('Loading ...'),
-                    CircularProgressIndicator(),
-                  ],
-                ),
-              );
-          }
-        }));
+            }
+          })),
+    );
   }
 }
 
 class VideosList extends StatelessWidget {
   final List<Map<String, String>> videosListMap;
-  final index;
+  final int index;
   const VideosList(this.videosListMap, this.index, {super.key});
 
   @override
@@ -107,14 +127,37 @@ class VideosList extends StatelessWidget {
         Stack(
           alignment: Alignment.bottomRight,
           children: [
-            Container(
-              height: 200,
-              width: MediaQuery.of(context).size.width,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(25.0),
-                child: Image.network(
-                  videosListMap[index]['imageUrl']!,
-                  fit: BoxFit.fitWidth,
+            GestureDetector(
+              onTap: (() {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MyVideoPlayer(
+                      videosListMap[index],
+                    ),
+                  ),
+                );
+                print('tapped');
+              }),
+              child: SizedBox(
+                height: 200,
+                width: MediaQuery.of(context).size.width,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25.0),
+                  child: Image.network(
+                    videosListMap[index]['imageUrl']!,
+                    fit: BoxFit.fitWidth,
+                    frameBuilder: (context, child, frame, _) {
+                      //a placeholder before image starts to load
+                      if (frame == null) {
+                        return Container(
+                          margin: const EdgeInsets.all(50),
+                          color: Colors.grey,
+                        );
+                      }
+
+                      return child;
+                    },
+                  ),
                 ),
               ),
             ),
