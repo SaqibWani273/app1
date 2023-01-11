@@ -1,13 +1,14 @@
-import 'package:app_for_publishing/screens/home/home_data.dart';
-import 'package:app_for_publishing/screens/home/my_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/home_data.dart';
+import 'my_video_player.dart';
 import 'my_app_bar.dart';
 import 'my_drawer.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final HomeData homeData;
+  const Home(this.homeData, {super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -17,12 +18,12 @@ class _HomeState extends State<Home> {
   late Future<List<Map<String, String>>> _videosDataFuture;
   @override
   void initState() {
-    _videosDataFuture =
-        Provider.of<HomeData>(context, listen: false).videosData();
+    _videosDataFuture = widget.homeData.videosData();
 
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     print('home build');
 // declaring them in build for responsiveness
@@ -43,7 +44,7 @@ class _HomeState extends State<Home> {
       ),
       drawer: SizedBox(
         width: deviceWidth * 0.6,
-        child: MyDrawer(),
+        child: const MyDrawer(),
       ),
       body: FutureBuilder(
           future: _videosDataFuture,
@@ -57,13 +58,11 @@ class _HomeState extends State<Home> {
               case ConnectionState.done:
                 {
                   if (snapshot.hasData) {
-                    // List<Map<String, String>> videoInfoList =
-                    //     Provider.of<VideoData>(context).videosInfo;
                     List<Map<String, String>> videosListMap =
-                        Provider.of<HomeData>(context).videosListMap;
+                        widget.homeData.videosListMap;
                     return SingleChildScrollView(
                       // physics: NeverScrollableScrollPhysics(),
-                      child: Container(
+                      child: SizedBox(
                         height: deviceHeight,
                         child: GridView.builder(
                           itemCount: videosListMap.length,
@@ -88,15 +87,16 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                     );
+                  } else {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text('Error Occurred ! while fetching data...'),
+                        ],
+                      ),
+                    );
                   }
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text('Error Occurred ! while fetching data...'),
-                      ],
-                    ),
-                  );
                 }
 
               default:
@@ -136,7 +136,6 @@ class VideosList extends StatelessWidget {
                     ),
                   ),
                 );
-                print('tapped');
               }),
               child: SizedBox(
                 height: 200,
@@ -165,16 +164,16 @@ class VideosList extends StatelessWidget {
               height: 20,
               width: 35,
               alignment: Alignment.center,
-              child: Text(
+              margin: const EdgeInsets.only(right: 05.0, bottom: 05.0),
+              color: Colors.black87.withOpacity(0.8),
+              child: const Text(
                 "00:00",
                 style: TextStyle(color: Colors.white, fontSize: 13.0),
               ),
-              margin: const EdgeInsets.only(right: 05.0, bottom: 05.0),
-              color: Colors.black87.withOpacity(0.8),
             )
           ],
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         SizedBox(
@@ -195,12 +194,12 @@ class VideosList extends StatelessWidget {
               child: Column(children: [
                 Container(
                   alignment: Alignment.topLeft,
-                  margin: EdgeInsets.only(left: 40),
+                  margin: const EdgeInsets.only(left: 40),
                   child: Text(
                     videosListMap[index]['description']!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 17.0,
                         fontFamily: 'Roboto-Bold',
                         fontWeight: FontWeight.w500),

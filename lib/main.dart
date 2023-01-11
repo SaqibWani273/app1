@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'screens/all_screens.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'screens/home/home_data.dart';
+import 'screens/home/models/home_data.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,9 +42,11 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       body: TabBarView(
         controller: _tabController,
         children: [
-          Consumer(builder: ((context, _, __) => Home())),
-          Audios(),
-          Profile(),
+          Consumer<HomeData>(
+            builder: ((context, homeData, _) => Home(homeData)),
+          ),
+          const Audios(),
+          const Profile(),
         ],
       ),
       bottomNavigationBar: myBottomNavigationBar(),

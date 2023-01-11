@@ -1,9 +1,5 @@
-import 'package:app_for_publishing/screens/home/home_data.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-
-import 'home.dart';
 
 class MyVideoPlayer extends StatefulWidget {
   final Map<String, String> videoData;

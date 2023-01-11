@@ -1,4 +1,4 @@
-export 'home/home.dart';
+export 'home/widgets/home.dart';
 export 'audios.dart';
 export 'profile.dart';
-export 'home/my_app_bar.dart';
+export 'home/widgets/my_app_bar.dart';

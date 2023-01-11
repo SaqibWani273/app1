@@ -1,4 +1,4 @@
-import 'package:app_for_publishing/screens/home/home_data.dart';
+import 'package:app_for_publishing/screens/home/models/home_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
