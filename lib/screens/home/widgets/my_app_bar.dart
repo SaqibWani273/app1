@@ -1,6 +1,7 @@
-import 'package:app_for_publishing/screens/home/models/home_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../models/home_data.dart';
 
 class MyAppBar extends StatelessWidget {
   final double appBarHeight;
@@ -87,19 +88,25 @@ class MyAppBar extends StatelessWidget {
                             controller: searchController,
                             onSubmitted: (value) {
                               print(value);
+                              Provider.of<HomeData>(context, listen: false)
+                                  .searchForVideos(
+                                value.trim(),
+                                context,
+                              );
                             },
                             autofocus: false,
-                            decoration: InputDecoration(
-                              hintText: Provider.of<HomeData>(context)
-                                          .currentTabIndex ==
-                                      0
-                                  ? 'Search  videos here'
-                                  : 'Search for Audios ',
-                            ),
+                            decoration: const InputDecoration(
+                                hintText: 'Search  videos here'),
                             keyboardType: TextInputType.name,
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Provider.of<HomeData>(context, listen: false)
+                                  .searchForVideos(
+                                      searchController.text.trim(), context);
+                              //to remove keyboard
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
                             icon: const Icon(
                               Icons.search_outlined,
                               size: 40,

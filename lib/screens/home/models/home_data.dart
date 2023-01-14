@@ -12,9 +12,10 @@ class HomeData extends ChangeNotifier {
   changeCurrentTab(int index) {
     currentTabIndex = index;
     notifyListeners();
-  }
+  } //changeCurrentTab()
 
   List<Map<String, String>> videosListMap = [];
+  List<Map<String, String>> searchVideosListMap = [];
   late Map<String, Map> completeVideosList;
   Future<List<Map<String, String>>> videosData() async {
     try {
@@ -32,7 +33,7 @@ class HomeData extends ChangeNotifier {
       print('error in firebase data fetching/videosData() function');
     }
     return videosListMap;
-  }
+  } //videosData()
 
   setVideosListMap() {
     videosListMap = [];
@@ -51,7 +52,7 @@ class HomeData extends ChangeNotifier {
         });
       },
     );
-  }
+  } //setVideosListMap()
 
   // list of listTiles data
   final List<Map<String, dynamic>> listTiles = [
@@ -85,9 +86,9 @@ class HomeData extends ChangeNotifier {
       'filledIcon': Icons.sms_rounded,
       'outlinedIcon': Icons.sms_outlined,
     },
-  ];
+  ]; //list listTiles
 // to change category in drawer
-  changeCategory(String selectedCategory, BuildContext context) {
+  void changeCategory(String selectedCategory) {
     currentCategory = selectedCategory;
     //if category == home get all the videos
     if (selectedCategory == 'Home') {
@@ -110,7 +111,47 @@ class HomeData extends ChangeNotifier {
         });
       });
     }
-    Navigator.of(context).pop();
+
+    notifyListeners();
+  } // changeCategory
+
+  searchForVideos(String data, BuildContext context) {
+    searchVideosListMap = [];
+
+    //searching from firebase result
+    completeVideosList.forEach(
+      (categoryType, categoryMap) {
+        categoryMap.forEach((userId, value) {
+          // List<Map> videosList = value as List<Map>;
+          // print(videosList.length);
+          final userMap = Map<String, Map>.from(value);
+          userMap.forEach((videoId, value) {
+            // List<String> videosUrl = videoMap['videoUrl'];
+            // print('${videoMap.toString()} ......................');
+            final videoMap = Map<String, String>.from(value);
+            if (videoMap['description']!.contains(
+                  RegExp(data, caseSensitive: false),
+                ) ||
+                videoMap['category']!.contains(
+                  RegExp(data, caseSensitive: false),
+                )) {
+              searchVideosListMap.add(videoMap);
+            }
+          });
+        });
+      },
+    );
+    if (searchVideosListMap.isNotEmpty) {
+      videosListMap = searchVideosListMap;
+    } else {
+      //to do :
+      //maybe show a no data found screen instead of snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No Data found !'),
+        ),
+      );
+    }
 
     notifyListeners();
   }

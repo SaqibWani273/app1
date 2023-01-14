@@ -3,11 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../models/home_data.dart';
 
-class MyDrawer extends StatelessWidget {
+class MyDrawer extends StatefulWidget {
   const MyDrawer({
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<MyDrawer> createState() => _MyDrawerState();
+}
+
+class _MyDrawerState extends State<MyDrawer> {
   @override
   Widget build(BuildContext context) {
     print('drawer build');
@@ -56,9 +61,20 @@ class MyDrawer extends StatelessWidget {
             children: homeData.listTiles
                 .map(((listItem) => Container(
                       child: GestureDetector(
-                        //context is needed to call navigator.pop(context)
-                        onTap: (() => homeData.changeCategory(
-                            listItem['title'], context)),
+                        onTap: (() async {
+                          homeData.changeCategory(
+                            listItem['title'],
+                          );
+                          //wait a bit
+                          await Future.delayed(
+                            const Duration(milliseconds: 400),
+                          );
+                          //then close drawer
+                          //mounted check is necessary when using
+                          //context in async function
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                        }),
                         child: Card(
                           color: homeData.currentCategory == listItem['title']
                               ? Colors.grey[400]
