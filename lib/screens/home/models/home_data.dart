@@ -1,12 +1,25 @@
+import 'dart:developer';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/my_video_player.dart';
+
 class HomeData extends ChangeNotifier {
-  HomeData(BuildContext context);
+  BuildContext context;
+  HomeData(this.context);
   //appIcon used in appbar on top
   String appIcon = 'assets/images/app_icon.jpg';
   String thumbnaiImage = 'assets/images/ab_lateef_bhat_modern_ss.png';
   int currentTabIndex = 0;
+  List<Map<String, String>> videosListMap = [];
+  List<Map<String, String>> searchVideosListMap = [];
+  late Map<String, Map> completeVideosList;
+  late OverlayState myOverlayState;
+  OverlayEntry? notificationsEntry;
+  var nOfNotifications = 1;
+  //var deviceSize=MediaQuery.of(context).size;
+
   //categories in drawer of home tab
   String currentCategory = 'Home';
   changeCurrentTab(int index) {
@@ -14,11 +27,9 @@ class HomeData extends ChangeNotifier {
     notifyListeners();
   } //changeCurrentTab()
 
-  List<Map<String, String>> videosListMap = [];
-  List<Map<String, String>> searchVideosListMap = [];
-  late Map<String, Map> completeVideosList;
   Future<List<Map<String, String>>> videosData() async {
     try {
+      log('future videosData()');
       DatabaseReference ref =
           FirebaseDatabase.instance.ref('completeVideosList');
       final dataAtRef = await ref.get();
@@ -154,5 +165,108 @@ class HomeData extends ChangeNotifier {
     }
 
     notifyListeners();
+  } //searchForVideos()
+
+  notificationsOverlay(BuildContext context) {
+    myOverlayState = Overlay.of(context)!;
+    notificationsEntry = OverlayEntry(
+      builder: ((context) {
+        log('entry1');
+        final deviceHeight = MediaQuery.of(context).size.height;
+        final deviceWidth = MediaQuery.of(context).size.width;
+        return Positioned(
+            left: deviceWidth * 0.1,
+            top: deviceHeight * 0.1,
+            right: deviceWidth * 0.1,
+            height: deviceHeight * 0.8,
+            // width: deviceWidth * 0.6,
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              home: Container(
+                color: Colors.white,
+                child: ListView(
+                  children: videosListMap
+                      .asMap()
+                      .map((index, videoMap) => MapEntry(
+                            index,
+                            Material(
+                              child: GestureDetector(
+                                onTap: () {
+                                  notificationsEntry?.remove();
+                                  notificationsEntry = null;
+                                  //to do :  change here
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => MyVideoPlayer(
+                                        videosListMap[index],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  color: index % 2 == 0
+                                      ? Colors.grey[50]
+                                      : Colors.white,
+                                  child: ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage: NetworkImage(
+                                          videoMap['imageUrl']!,
+                                        ),
+                                      ),
+                                      title: Text(videoMap['description']!),
+                                      trailing: Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.only(right: 40),
+                                            child: Image.network(
+                                                videoMap['imageUrl']!),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.more_vert),
+                                            onPressed: (() {
+                                              log('popup menu');
+                                              //to do: show popup menu
+
+                                              PopupMenuButton(
+                                                //  position: PopupMenuPosition.,
+                                                itemBuilder: ((context) => [
+                                                      PopupMenuItem(
+                                                        child: TextButton(
+                                                          child:
+                                                              Text('button1'),
+                                                          onPressed: (() {
+                                                            log('button 1 in notifications');
+                                                          }),
+                                                        ),
+                                                      ),
+                                                      PopupMenuItem(
+                                                        child: TextButton(
+                                                          child:
+                                                              Text('button2'),
+                                                          onPressed: (() {
+                                                            log('button 2 in notifications');
+                                                          }),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                              );
+                                            }),
+                                          )
+                                        ],
+                                      )),
+                                ),
+                              ),
+                            ),
+                          ))
+                      .values
+                      .toList(),
+                ),
+              ),
+            ));
+      }),
+    );
+    myOverlayState.insert(notificationsEntry!);
   }
 }

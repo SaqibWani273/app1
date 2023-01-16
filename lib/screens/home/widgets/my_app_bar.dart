@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +9,7 @@ class MyAppBar extends StatelessWidget {
   final double appBarHeight;
   final double appBarWidth;
 
-  const MyAppBar(
+  MyAppBar(
     BuildContext context, {
     super.key,
     required this.appBarHeight,
@@ -16,8 +18,9 @@ class MyAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    HomeData homeData = Provider.of<HomeData>(context, listen: false);
     TextEditingController searchController = TextEditingController();
-    print('appbar rebult');
+    log('appbar rebult');
     return AppBar(
         elevation: 3.0,
         backgroundColor: Colors.white,
@@ -47,8 +50,10 @@ class MyAppBar extends StatelessWidget {
                     child: Stack(
                       alignment: Alignment.bottomCenter,
                       children: [
-                        Image.asset(Provider.of<HomeData>(context).appIcon,
-                            fit: BoxFit.cover),
+                        Image.asset(
+                          homeData.appIcon,
+                          fit: BoxFit.cover,
+                        ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -88,8 +93,7 @@ class MyAppBar extends StatelessWidget {
                             controller: searchController,
                             onSubmitted: (value) {
                               print(value);
-                              Provider.of<HomeData>(context, listen: false)
-                                  .searchForVideos(
+                              homeData.searchForVideos(
                                 value.trim(),
                                 context,
                               );
@@ -101,9 +105,8 @@ class MyAppBar extends StatelessWidget {
                           ),
                           IconButton(
                             onPressed: () {
-                              Provider.of<HomeData>(context, listen: false)
-                                  .searchForVideos(
-                                      searchController.text.trim(), context);
+                              homeData.searchForVideos(
+                                  searchController.text.trim(), context);
                               //to remove keyboard
                               FocusManager.instance.primaryFocus?.unfocus();
                             },
@@ -122,12 +125,45 @@ class MyAppBar extends StatelessWidget {
             ),
             Expanded(
               flex: 1,
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.notifications_none_rounded,
-                  size: 40,
-                  color: Colors.black,
+              child: GestureDetector(
+                onTap: () {
+                  //show overlay only if  overlay
+                  // is not displayed currently
+                  //or remove it if displayed
+                  homeData.notificationsEntry == null
+                      ? homeData.notificationsOverlay(context)
+                      : {
+                          homeData.notificationsEntry?.remove(),
+                          homeData.notificationsEntry = null,
+                        };
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Stack(alignment: Alignment.topRight, children: [
+                    const Icon(
+                      Icons.notifications_none_rounded,
+                      size: 50,
+                      color: Colors.black,
+                    ),
+                    if (homeData.nOfNotifications != 0)
+                      Container(
+                        height: 20,
+                        width: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(25),
+                          color: Colors.red,
+                        ),
+                        child: Center(
+                          child: Text(
+                            //to do : change it later
+                            homeData.nOfNotifications.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                  ]),
                 ),
               ),
             ),

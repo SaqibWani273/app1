@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,20 +38,28 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print('main.dart build called');
+    log('main.dart build called');
 
-    return Scaffold(
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          Consumer<HomeData>(
-            builder: ((context, homeData, _) => Home(homeData)),
-          ),
-          const Audios(),
-          const Profile(),
-        ],
+    return GestureDetector(
+      //to do :  detect  swipes
+
+      onTap: () {
+        log('gesture detector of main scaffold');
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            Consumer<HomeData>(
+              builder: ((context, homeData, _) => Home(homeData)),
+            ),
+            const Audios(),
+            const Profile(),
+          ],
+        ),
+        bottomNavigationBar: myBottomNavigationBar(),
       ),
-      bottomNavigationBar: myBottomNavigationBar(),
     );
   }
 

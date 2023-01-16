@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +18,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late Future<List<Map<String, String>>> _videosDataFuture;
+
   @override
   void initState() {
     _videosDataFuture = widget.homeData.videosData();
@@ -25,92 +28,102 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    print('home build');
+    log('home build');
 // declaring them in build for responsiveness
     var deviceWidth = MediaQuery.of(context).size.width;
     var deviceHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(
-          deviceWidth,
-          deviceHeight * 0.08,
-        ), //Size.fromHeight(55.0),
-        child: MyAppBar(
-          context,
-          appBarHeight: deviceHeight * 0.08,
-          appBarWidth: deviceWidth,
+    return GestureDetector(
+      onTap: () {
+        log('gestur dector of home');
+        //to remove overlay of notifications
+        widget.homeData.notificationsEntry?.remove();
+        widget.homeData.notificationsEntry = null;
+        //to remove any soft keyboard
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size(
+            deviceWidth,
+            deviceHeight * 0.08,
+          ), //Size.fromHeight(55.0),
+          child: MyAppBar(
+            context,
+            appBarHeight: deviceHeight * 0.08,
+            appBarWidth: deviceWidth,
+          ),
         ),
-      ),
-      drawer: SizedBox(
-        width: deviceWidth * 0.6,
-        child: const MyDrawer(),
-      ),
-      body: FutureBuilder(
-          future: _videosDataFuture,
-          builder: ((context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+        drawer: SizedBox(
+          width: deviceWidth * 0.6,
+          child: const MyDrawer(),
+        ),
+        body: FutureBuilder(
+            future: _videosDataFuture,
+            builder: ((context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
 
-              case ConnectionState.done:
-                {
-                  if (snapshot.hasData) {
-                    List<Map<String, String>> videosListMap =
-                        widget.homeData.videosListMap;
-                    return SingleChildScrollView(
-                      // physics: NeverScrollableScrollPhysics(),
-                      child: SizedBox(
-                        height: deviceHeight,
-                        child: GridView.builder(
-                          itemCount: videosListMap.length,
-                          //change padding for responsiveness
-                          padding: const EdgeInsets.only(
-                            left: 30,
-                            top: 20.0,
-                            right: 40,
-                            bottom: 150.0,
+                case ConnectionState.done:
+                  {
+                    if (snapshot.hasData) {
+                      List<Map<String, String>> videosListMap =
+                          widget.homeData.videosListMap;
+                      return SingleChildScrollView(
+                        // physics: NeverScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: deviceHeight,
+                          child: GridView.builder(
+                            itemCount: videosListMap.length,
+                            //change padding for responsiveness
+                            padding: const EdgeInsets.only(
+                              left: 30,
+                              top: 20.0,
+                              right: 40,
+                              bottom: 150.0,
+                            ),
+                            //  shrinkWrap: true,
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 400, //width
+                              mainAxisExtent: 310, //height
+                              crossAxisSpacing: 15.0,
+                              mainAxisSpacing: 15.0,
+                            ),
+                            itemBuilder: (context, index) {
+                              return VideosList(videosListMap, index);
+                            },
                           ),
-                          //  shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 400, //width
-                            mainAxisExtent: 310, //height
-                            crossAxisSpacing: 15.0,
-                            mainAxisSpacing: 15.0,
-                          ),
-                          itemBuilder: (context, index) {
-                            return VideosList(videosListMap, index);
-                          },
                         ),
-                      ),
-                    );
-                  } else {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text('Error Occurred ! while fetching data...'),
-                        ],
-                      ),
-                    );
+                      );
+                    } else {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Text('Error Occurred ! while fetching data...'),
+                          ],
+                        ),
+                      );
+                    }
                   }
-                }
 
-              default:
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text('Loading ...'),
-                      CircularProgressIndicator(),
-                    ],
-                  ),
-                );
-            }
-          })),
+                default:
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text('Loading ...'),
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  );
+              }
+            })),
+      ),
     );
   }
 }

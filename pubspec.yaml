@@ -41,8 +41,9 @@ dependencies:
   firebase_database: ^10.0.9
   # used youtube_player_flutter now instead of these two
   # flick_video_player: ^0.5.0
-  # video_player: ^2.4.10
+  video_player: ^2.4.10
   youtube_player_flutter: ^8.1.2
+  
 
 dev_dependencies:
   flutter_test:
