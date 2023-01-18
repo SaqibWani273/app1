@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:app_for_publishing/screens/profile/profile_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +15,16 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MaterialApp(
-    home: ChangeNotifierProvider(
-      //now anyone  in myapp who is interested in homedata
-      //can become a consumer of it
-      create: (context) => HomeData(context),
-      child: MyApp(),
+    home: MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => HomeData(context),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ProfileData(context),
+        ),
+      ],
+      child: const MyApp(),
     ),
     debugShowCheckedModeBanner: false,
   ));
@@ -52,10 +58,12 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
           controller: _tabController,
           children: [
             Consumer<HomeData>(
-              builder: ((context, homeData, _) => Home(homeData)),
+              builder: (context, homeData, _) => Home(homeData),
             ),
             const Audios(),
-            const Profile(),
+            Consumer<ProfileData>(
+              builder: (context, profileData, child) => Profile(profileData),
+            ),
           ],
         ),
         bottomNavigationBar: myBottomNavigationBar(),

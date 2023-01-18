@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'profile_data.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  final ProfileData _profileData;
+  const Profile(this._profileData, {super.key});
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -12,9 +13,13 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final _formKey = GlobalKey<FormState>();
-  final ProfileData _profileData = ProfileData();
+  late RegExp _regExp;
+  late Map textFieldMap;
+  late String? password;
+
   @override
   Widget build(BuildContext context) {
+    textFieldMap = widget._profileData.textFields;
     var deviceSize = MediaQuery.of(context).size;
     log('profile build');
     return Container(
@@ -27,30 +32,37 @@ class _ProfileState extends State<Profile> {
           key: _formKey,
           child: Column(children: [
             Column(
-              children: _profileData.textFields
+              children: widget._profileData.textFields
                   .map(
                     (key, value) => MapEntry(
                       key,
                       Column(
                         children: [
                           TextFormField(
-                            controller: _profileData.textFields[key]
-                                ['controller'],
-                            validator: (value) {
-                              if (value == null ||
-                                  value.length <
-                                      _profileData.textFields[key]
-                                          ['minLength']) {
-                                return _profileData.textFields[key]
-                                    ['errorMessage'];
-                                //   return 'error';
+                            controller: widget
+                                ._profileData.textFields[key]!['controller'],
+                            validator: (textFieldValue) {
+                              //check password=confirm password
+                              if (key == 'password') {
+                                password = textFieldValue;
+                              } else if (key == 'confirmPassword' &&
+                                  password != textFieldValue) {
+                                return 'Passwords Do not Match';
+                              }
+
+                              //form validation using rexExp
+                              if (textFieldValue == null ||
+                                  !widget._profileData.regularExp[key]!
+                                      .hasMatch(textFieldValue)) {
+                                return widget._profileData
+                                    .textFields[key]!['errorMessage'];
                               }
 
                               return null;
                             },
                             decoration: InputDecoration(
-                              hintText: _profileData.textFields[key]
-                                  ['hintText'],
+                              hintText: widget
+                                  ._profileData.textFields[key]!['hintText'],
                             ),
                           ),
                           const SizedBox(
@@ -83,12 +95,8 @@ class _ProfileState extends State<Profile> {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    log('signup pressed');
-                    if (_formKey.currentState!.validate() &&
-                        password.text == confirmPassword.text)
-                    //to do here...
-                    //  show snackbar if passwords do not match
-                    {
+                    if (_formKey.currentState!.validate()) {
+                      widget._profileData.signUp();
                       log('form validated');
                     }
                   },
