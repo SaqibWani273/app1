@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
             ),
             const Audios(),
             Consumer<ProfileData>(
-              builder: (context, profileData, child) => Profile(profileData),
+              builder: (context, profileData, child) => const Profile(),
             ),
           ],
         ),

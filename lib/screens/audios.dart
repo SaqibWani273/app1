@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 class Audios extends StatefulWidget {
   const Audios({super.key});
@@ -13,7 +12,7 @@ class Audios extends StatefulWidget {
 class _AudiosState extends State<Audios> {
   @override
   Widget build(BuildContext context) {
-    print('audios build');
+    log('audios build');
     return Scaffold(
       body: Container(
           child: Center(

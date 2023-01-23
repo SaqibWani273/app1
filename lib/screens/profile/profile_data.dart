@@ -1,10 +1,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileData extends ChangeNotifier {
   final BuildContext context;
-  ProfileData(this.context);
+  ProfileData(this.context) {
+    init(context);
+  }
   static final TextEditingController email = TextEditingController();
   static final TextEditingController password = TextEditingController();
   static final TextEditingController userName = TextEditingController();
@@ -43,9 +46,67 @@ class ProfileData extends ChangeNotifier {
       'controller': confirmPassword,
     },
   };
+  String userState = 'loading';
+  late UserCredential newUser;
+
+//called by constructor
+  Future<void> init(BuildContext context) async {
+    //FirebaseAuth.instance.currentUser?.delete();
+    FirebaseAuth.instance.userChanges().listen((user) async {
+      if (user == null) {
+        userState = 'null';
+      } else {
+        //without reloading firebase doesnot automatically
+        //update isemailVerified status
+
+        await user.reload();
+        if (user.emailVerified) {
+          //send to login screen
+          log('email verified');
+          userState = 'loggedOut';
+        } else if (!user.emailVerified) {
+          //send to emailVerification screen
+          log('email not verified ${user.toString()}');
+          //  log(FirebaseAuth.instance.currentUser.toString());
+          userState = 'emailNotVerified';
+        }
+      }
+
+      notifyListeners();
+    });
+  }
+
   Future<void> signUp() async {
-    log(
-      'Details Received :\nEmail=${email.text},username=${userName.text},password=${password.text}',
+    newUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email.text,
+      password: password.text,
     );
+    // log(newUser.toString());
+    // await newUser.user?.sendEmailVerification();
+    // await newUser.user?.reload();
+    // if (newUser.user!.emailVerified) {
+    //   await FirebaseAuth.instance.signInWithCredential(
+    //     newUser.credential!,
+    //   );
+    //   log('isSignedIn = $isSignedIn ${newUser.user.toString()}');
+    //   isSignedIn = true;
+    //   notifyListeners();
+    // }
+  }
+
+  Future<void> verifyEmail() async {
+    log(FirebaseAuth.instance.currentUser.toString());
+    await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+  }
+
+  Future<void> delete() async {
+    try {
+      await FirebaseAuth.instance.currentUser?.delete();
+      userState = 'null';
+    } on FirebaseAuthException catch (exception) {
+      log('firebaseAuth error=${exception.code}');
+    } catch (e) {
+      log(e.toString());
+    }
   }
 }

@@ -41,7 +41,7 @@ class HomeData extends ChangeNotifier {
       //deep casting and traversing to get the actual data
       setVideosListMap();
     } catch (e) {
-      print('error in firebase data fetching/videosData() function');
+      log('error in firebase data fetching/videosData() function');
     }
     return videosListMap;
   } //videosData()
@@ -109,7 +109,7 @@ class HomeData extends ChangeNotifier {
     else {
       videosListMap = [];
 
-      Map selectedMapCategory = completeVideosList['$selectedCategory']!;
+      Map selectedMapCategory = completeVideosList[selectedCategory]!;
       selectedMapCategory.forEach((userId, value) {
         // List<Map> videosList = value as List<Map>;
 
